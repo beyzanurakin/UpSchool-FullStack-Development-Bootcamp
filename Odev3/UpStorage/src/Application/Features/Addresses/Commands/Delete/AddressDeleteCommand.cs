@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Domain.Common;
+using MediatR;
 
-public class Class1
+namespace Application.Features.Addresses.Command.Delete
 {
-	public Class1()
-	{
-	}
+    public class AddressDeleteCommand : IRequest<Response<int>>
+    {
+        public Guid AddressId { get; set; }
+    }
 }
