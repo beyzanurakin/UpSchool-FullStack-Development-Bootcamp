@@ -1,25 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Text;
-using System.Threading.Tasks;
+﻿using PasswordGenerator;
+using System;
 
+var generator = new Generator();
 
-namespace PasswordGenerator
-{
-    class Program
-    {
-        
-        static void Main(string[] args)
-        {
-            var generator = new Generator();
-            generator.Greetings();
-       
-            generator.GenerateLastPassword();
-            generator.WriteGeneratedPassword();
-            Console.ReadLine();
-            
-        }
-    }
-}
+generator.Greetings();
+
+generator.ReadInputs();
+
+generator.Generate();
+
+generator.WriteLatestGeneratedPassword();
+
+Console.ReadLine();
+return 0;

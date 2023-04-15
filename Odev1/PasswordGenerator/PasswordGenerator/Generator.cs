@@ -8,14 +8,32 @@ namespace PasswordGenerator
 {
     public class Generator
     {
-        private static string Upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        private static string Lower = "abcdefghijklmnopqursuvwxyz";
-        private static string Numbers = "123456789";
-        private static string SpecialChars = @"!@£$%^&*()#€";
-        private static string GeneratedPassword;
+        private const string Uppers = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        private const string Lowers = "abcdefghijklmnopqursuvwxyz";
+        private const string Numbers = "123456789";
+        private const string SpecialChars = @"!@£$%^&*()#€";
+        private int _length = 0;
+        private bool _isUserInputValid = true;
+
+        private string _lastGeneratedPassword;
+        private List<string> _generatedPasswords;
+
+        private readonly Random _random;
+        private readonly StringBuilder _passwordBuilder;
+        private readonly StringBuilder _charSetBuilder;
+
+        public bool IncludeNumbers { get; set; }
+        public bool IncludeLowercaseCharacters { get; set; }
+        public bool IncludeUppercaseCharacters { get; set; }
+        public bool IncludeSpecialCharacters { get; set; }
+        
         public Generator() 
         {
-         
+            _random = new Random();
+            _passwordBuilder = new StringBuilder();
+            _charSetBuilder = new StringBuilder();
+            _lastGeneratedPassword = String.Empty;
+            _generatedPasswords = new List<string>();
         }
         public void Greetings()
         {
@@ -23,71 +41,91 @@ namespace PasswordGenerator
             Console.WriteLine("Welcome to the Random Password Generator!");
             Console.WriteLine("*****************************************");
         }
-        public void GenerateLastPassword()
+        public void ReadInputs()
         {
-            bool upper, lower, number, special;
-            int passwordLength;
-
             Console.WriteLine(Messages.Questions.IncludeNumbers);
-            number = ReadInputs(Console.ReadLine());
+            IncludeNumbers = Console.ReadLine()?.ToLower() == "y";
 
             Console.WriteLine(Messages.Questions.IncludeLowercaseCharacters);
-            lower = ReadInputs(Console.ReadLine());
+            IncludeLowercaseCharacters = Console.ReadLine()?.ToLower() == "y";
 
             Console.WriteLine(Messages.Questions.IncludeUppercaseCharacters);
-            upper = ReadInputs(Console.ReadLine());
+            IncludeUppercaseCharacters = Console.ReadLine()?.ToLower() == "y";
 
             Console.WriteLine(Messages.Questions.IncludeSpecialCharacters);
-            special = ReadInputs(Console.ReadLine());
+            IncludeSpecialCharacters = Console.ReadLine()?.ToLower() == "y";
 
             Console.WriteLine(Messages.Questions.PasswordLength);
-            passwordLength = Convert.ToInt32(Console.ReadLine());
+            var passwordLength = Console.ReadLine();
 
+            if(!int.TryParse(passwordLength, out _length) || 
+                !IncludeNumbers && 
+                !IncludeLowercaseCharacters && 
+                !IncludeUppercaseCharacters &&
+                !IncludeSpecialCharacters
+                )
+            {
+                _isUserInputValid = false;
+                return;
+            }
+            _isUserInputValid = true;
 
-            GeneratedPassword = GeneratePassword(upper, lower, number, special, passwordLength);
-          
         }
-        public bool ReadInputs(string answer)
+
+
+
+        private void ShowErrorMessage(string? message = null)
         {
-            if (answer == "y" || answer == "Y")
+            if(string.IsNullOrEmpty(message))
             {
-                return true;
+                Console.WriteLine("password can not be created");
+                return;
+
             }
-            else
-            {
-                return false;
-            }
+            Console.WriteLine(message);
         }
-        public void WriteGeneratedPassword()
+       
+        public void Generate()
+        {
+            Console.WriteLine( "Generate");
+            if (!_isUserInputValid)
+            {
+                ShowErrorMessage();
+                return;
+            }
+            if (IncludeNumbers) _charSetBuilder.Append(Numbers);
+            if (IncludeLowercaseCharacters) _charSetBuilder.Append(Lowers);
+            if (IncludeUppercaseCharacters) _charSetBuilder.Append(Uppers);
+            if (IncludeSpecialCharacters) _charSetBuilder.Append(SpecialChars);
+
+            var charSet = _charSetBuilder.ToString();
+
+            for (int i = 0; i < _length; i++)
+            {
+                var randomIndex = _random.Next(charSet.Length);
+                _passwordBuilder.Append(charSet[randomIndex]);
+            }
+
+            _lastGeneratedPassword = _passwordBuilder.ToString();
+            _generatedPasswords.Add(_lastGeneratedPassword);
+            _charSetBuilder.Clear();
+            _passwordBuilder.Clear();
+        }
+
+        //public string GetLatestGeneratedPassword() => _lastGeneratedPassword;
+        //public List<string> GetGeneratedPasswords() => _generatedPasswords;
+        public void WriteLatestGeneratedPassword() => WriteFormattedPassword(_lastGeneratedPassword);
+        //public void WriteGeneratedPasswords() => _generatedPasswords.ForEach(WriteFormattedPassword);
+        public void WriteFormattedPassword(string? password)
         {
             
             Console.WriteLine("------------------------------------------------");
-            Console.WriteLine(GeneratedPassword);
+            Console.WriteLine(password);
+            
             Console.WriteLine("------------------------------------------------");
         }
-        public static string GeneratePassword(
-            bool useUpper,
-            bool useLower,
-            bool useNumbers,
-            bool useSpecial,
-            int PasswordSize
-            )
-        {
-            Random rand = new Random();
-            string charSet = string.Empty;
-            char[] password = new char[PasswordSize];
-
-            if (useUpper) charSet += Upper;
-            if (useLower) charSet += Upper.ToLower();
-            if (useNumbers) charSet += Numbers;
-            if (useSpecial) charSet += SpecialChars;
-
-            for (int i = 0; i < PasswordSize; i++)
-            {
-                password[i] = charSet[rand.Next(charSet.Length - 1)];
-            }
-            return string.Join(null, password);
-        }
+       
+       
 
     }
 }
